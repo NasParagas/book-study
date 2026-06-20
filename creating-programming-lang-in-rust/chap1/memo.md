@@ -41,4 +41,77 @@
     - ほとんどのネイティブコンパイル言語が該当(C, C++, Rust)
     - PythonはC, JavascriptはC++で書かれた処理系を使う
   - TODO: あんまり原理がわからん
-- 
+
+## コンパイルパイプライン
+
+```mermaid
+%%{init: {'flowchart': {'htmlLabels': true}}}%%
+flowchart LR
+    A[ソースコード] --> B["字句解析器<br/>(Lexer)"]
+    B --> C["構文解析器<br/>(Parser)"]
+    C --> D["抽象構文木<br/>(AST)"]
+
+    %% スクリプト言語
+    D --> E[インタプリタ]
+
+    %% コンパイル処理
+    B --> F["コンパイラ<br/>(Compiler)"]
+
+    %% ネイティブコンパイル言語
+    F --> G[機械語コード]
+    G --> H["ローダ<br/>(OS実行環境)"]
+
+    %% 中間コンパイル言語
+    F --> I[中間コード]
+    I --> J[Just-in-time<br/>Compiler]
+    J --> G
+    I --> K["ローダ<br/>(OS実行環境)"]
+
+    %% グループ
+    subgraph SCRIPT[スクリプト言語]
+        E
+    end
+
+    subgraph NATIVE[ネイティブコンパイル言語]
+        F
+        G
+        H
+    end
+
+    subgraph INTERMEDIATE[中間コンパイル言語]
+        I
+        J
+        K
+    end
+
+    %% スタイル
+    style SCRIPT stroke:#333,stroke-width:2px,stroke-dasharray:2 4,fill:transparent,color:#fff
+    style NATIVE stroke:#333,stroke-width:2px,stroke-dasharray:8 4,fill:transparent,color:#fff
+    style INTERMEDIATE stroke:#333,stroke-width:2px,fill:transparent,color:#fff
+
+    classDef box fill:#f5f5f5,stroke:#333,color:#000
+    class A,B,C,D,E,F,G,H,I,J,K box
+```
+
+### 字句解析
+
+- lexer, tokenizerとも  
+- 例えば`123+456`を`123`,`+`,`456`に分割すること  
+- 後の**構文解析**とまとめて一つの処理となることもある  
+- コンバいる時間の最適化のために行われる
+  - あらがじめ字句解析しておくことで、構文解析を効率的に行うことができる
+- 綺麗に分割するのは難しく、例えばC++のテンプレート引数の<>とシフト演算子の>>が重なってしまう問題があり、`A<B<C> >`のように空白を入れる必要がある時期があった
+
+### 構文解析→AST
+
+- AST==Abstract Syntax Tree
+- 構文解析をした結果がASTとして出力される
+- 以下のように文字列を木構造に組み直したデータ構造(下はa+b+cの例)
+```txt
+      +
+     / \
+    +   c
+   / \
+  a   b
+```
+
