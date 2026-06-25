@@ -56,4 +56,29 @@ fn main() {
     // 正負の無限大、NAN, MINMAXがある
     assert_eq!(-1. / f32::INFINITY, 0.0);
     assert_eq!(-f32::MIN, f32::MAX);
+
+    // bool
+    assert_eq!(2 > 5, false);
+    // 暗黙的なint等への変換はされない(そもそもコンパイルできない)
+    // assert_eq!(1==true, 1)
+    // 1byteある()
+    println!("{}", std::mem::size_of::<bool>());
+    println!("{}", std::mem::align_of::<bool>());
+    let b = true;
+    let p: *const bool = &b;
+    println!("address of bool   = {:p}", p);
+    let t = true;
+    let f = false;
+    let tb: u8 = unsafe { std::mem::transmute(t) };
+    let fb: u8 = unsafe { std::mem::transmute(f) };
+    println!("true  as byte = {}", tb);
+    println!("false as byte = {}", fb);
+
+    // 文字列
+    assert_eq!('*' as i32, 42);
+
+    // tuple
+    // "hello"と言う書き方をすると、"コンパイル時にバイナリへ埋め込まれた固定文字列への参照"となり、所有権を持たないため&strとなる...?
+    let tuple_exp: (&str, i32, bool) = ("hello", 5, true);
+    assert_eq!(tuple_exp.0, "hello");
 }
